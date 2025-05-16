@@ -1,4 +1,4 @@
-package com.example.build_test
+package com.example.maplibre_flutter_learning
 
 import io.flutter.embedding.android.FlutterActivity
 
