@@ -40,12 +40,6 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
             constraints.maxHeight / 2,
           );
         }
-
-        print("容器约束大小${constraints.maxWidth}x${constraints.maxHeight}");
-        print("MediaQuery尺寸${Get.width}x${Get.height}");
-        print("屏幕点位${controller.mapCenter}");
-        print(GetPlatform.isAndroid ? "是安卓" : "不是安卓");
-        print(GetPlatform.isIOS ? "是IOS" : "不是IOS");
         return MapLibreMap(
           onMapCreated: controller.onMapCreated,
           initialCameraPosition: controller.initialCameraPosition,
@@ -71,14 +65,6 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
             onPressed: controller.toggleDrawingMode,
             child: Text(controller.isDrawingMode ? "结束画地" : "开始画地"),
           ),
-          // ElevatedButton(
-          //   onPressed: controller.addSourceTest,
-          //   child: Text("添加源"),
-          // ),
-          // ElevatedButton(
-          //   onPressed: controller.sourceExistsTest,
-          //   child: Text("检测源"),
-          // ),
           if (controller.isDrawingMode) ...[
             ElevatedButton(
               onPressed: controller.onDrawPolygonPoint,

@@ -215,45 +215,4 @@ mixin DrawPolygonMixin on MapStateMixin {
   }
 
   void onFinishDrawPolygon() {}
-
-  void addSourceTest() async {
-    final controller = await mapController.future;
-    await controller.addSource(
-      "my-TestSource",
-      GeojsonSourceProperties(
-        data: {
-          "type": "Feature",
-          "properties": {},
-          "geometry": {
-            "type": "LineString",
-            "coordinates": [
-              [86.00426167774084, 44.34094461041972],
-              [86.00517720325354, 44.337967341789394],
-              [86.00693672884825, 44.33682141116668],
-              [86.01185767847899, 44.336698631557404],
-            ],
-          },
-        },
-      ),
-    );
-    print("添加测试数据源");
-
-    await controller.addLayer(
-      "my-TestSource",
-      "myTestLayer",
-      LineLayerProperties(
-        lineColor: "#000",
-        lineWidth: 10,
-        // lineOpacity: lineDisplay ? 1 : 0,
-      ),
-    );
-    print("添加测试层");
-  }
-
-  void sourceExistsTest() async {
-    bool result = await isSourceExists("my-TestSource");
-    print(result ? "source存在" : "source不存在");
-    bool result2 = await isLayerExists("myTestLayer");
-    print(result2 ? "layer存在" : "layer不存在");
-  }
 }
