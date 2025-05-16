@@ -36,94 +36,48 @@ mixin DrawPolygonMixin on MapStateMixin {
     final controller = await mapController.future;
     var mapCenterLatlng = await controller.toLatLng(mapCenter);
     drawPolygonPoints.add(mapCenterLatlng);
-    var coordinates =
-        drawPolygonPoints.map((e) => [e.longitude, e.latitude]).toList();
-    // 当坐标点大于2个时，添加多边形
-    if (coordinates.length > 2) {
-      //闭合多边形
-      coordinates.add(coordinates[0]);
-    }
+    var coordinates = getCoordinatesFromPoints(drawPolygonPoints);
+
     // 检查数据源是否存在
     final drawLandPolygonSourceExists = await isSourceExists(
       "draw-land-polygon-source",
     );
-    final drawLandPolygonLayerExists = await isLayerExists(
-      "draw-land-polygon-layer",
-    );
-    final drawLandPointLayerExists = await isLayerExists(
-      "draw-land-point-layer",
-    );
-    print(
-      drawLandPolygonSourceExists
-          ? "draw-land-polygon-source存在"
-          : "draw-land-polygon-source不存在",
-    );
-    print(
-      drawLandPolygonLayerExists
-          ? "draw-land-polygon-layer存在"
-          : "draw-land-polygon-layer不存在",
-    );
-    print(
-      drawLandPointLayerExists
-          ? "draw-land-point-layer存在"
-          : "draw-land-point-layer不存在",
-    );
+
     // 如果存在，则更新数据源，否则添加数据源
     if (drawLandPolygonSourceExists) {
-      controller.setGeoJsonSource("draw-land-polygon-source", {
-        "type": "FeatureCollection",
-        "features": [
-          coordinates.length >= 3
-              ? {
-                  "type": "Feature",
-                  "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [coordinates],
-                  },
-                }
-              : null,
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "MultiPoint",
-              "coordinates": [
-                ...(drawPolygonPoints
-                    .map((e) => [e.longitude, e.latitude])
-                    .toList()),
-              ],
-            },
-          },
-        ].where((f) => f != null).toList(),
-      });
+      await updatePolygonSource(coordinates);
       print("更新数据源");
     } else {
       // 添加画地数据源
-
       try {
+        final features = <Map<String, dynamic>>[];
+
+        // 添加点图层数据
+        features.add({
+          "type": "Feature",
+          "geometry": {
+            "type": "MultiPoint",
+            "coordinates": coordinates,
+          },
+        });
+
+        // 如果有至少2个点，添加线段数据
+        if (coordinates.length >= 2) {
+          features.add({
+            "type": "Feature",
+            "geometry": {
+              "type": "LineString",
+              "coordinates": coordinates,
+            }
+          });
+        }
+
         await controller.addSource(
           "draw-land-polygon-source",
           GeojsonSourceProperties(
             data: {
               "type": "FeatureCollection",
-              // "properties": {},
-              "features": [
-                // {
-                //   "type": "Feature",
-                //   "geometry": {
-                //     "type": "Polygon",
-                //     "coordinates": [coordinates],
-                //   },
-                // },
-                {
-                  "type": "Feature",
-                  "geometry": {
-                    "type": "MultiPoint",
-                    "coordinates": drawPolygonPoints
-                        .map((e) => [e.longitude, e.latitude])
-                        .toList(),
-                  },
-                },
-              ],
+              "features": features,
             },
           ),
         );
@@ -132,36 +86,10 @@ mixin DrawPolygonMixin on MapStateMixin {
         print(e);
       }
     }
-    //如果画地图层存在，则删除
-    if (drawLandPolygonLayerExists) {
-      await controller.removeLayer("draw-land-polygon-layer");
-      print("删除画地图图层");
-    }
-    await controller.addLayer(
-      "draw-land-polygon-source",
-      "draw-land-polygon-layer",
-      FillLayerProperties(
-        fillColor: "#808080",
-        fillOutlineColor: "#ffffff",
-        fillOpacity: 0.5,
-      ),
-    );
-    //如果画地点图层不存在，则添加
-    if (drawLandPointLayerExists) {
-      await controller.removeLayer("draw-land-point-layer");
-      // print("添加画地点图层");
-    }
-    await controller.addLayer(
-      "draw-land-polygon-source",
-      "draw-land-point-layer",
-      CircleLayerProperties(
-        circleColor: "#FFA500", // 橘黄色
-        circleRadius: 6, // 点的大小
-        circleStrokeWidth: 2, // 边框宽度
-        circleStrokeColor: "#FFFFFF", // 白色边框
-      ),
-      // belowLayerId: null, // 确保点图层在最顶层
-    );
+
+    // 更新图层
+    await updateLayers(coordinates.length > 2);
+
     print(mapCenterLatlng);
   }
 
@@ -182,7 +110,16 @@ mixin DrawPolygonMixin on MapStateMixin {
         "coordinates": coordinates,
       },
     });
-
+    // 添加线段数据（当有至少2个点时）
+    if (coordinates.length >= 2) {
+      features.add({
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": coordinates,
+        }
+      });
+    }
     // 如果点数足够，添加多边形数据
     if (coordinates.length > 2) {
       var polygonCoordinates = [...coordinates, coordinates[0]];
@@ -213,7 +150,18 @@ mixin DrawPolygonMixin on MapStateMixin {
     if (await isLayerExists("draw-land-point-layer")) {
       await controller.removeLayer("draw-land-point-layer");
     }
-
+    if (await isLayerExists("draw-land-line-layer")) {
+      await controller.removeLayer("draw-land-line-layer");
+    }
+    // 添加线段图层
+    await controller.addLayer(
+      "draw-land-polygon-source",
+      "draw-land-line-layer",
+      LineLayerProperties(
+        lineColor: "#ff098e", // 白色线段
+        lineWidth: 10, // 线宽
+      ),
+    );
     // 添加点图层
     await controller.addLayer(
       "draw-land-polygon-source",
