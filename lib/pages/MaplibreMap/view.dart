@@ -63,7 +63,7 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 20, // 距离底部20像素
+      bottom: 70, // 距离底部20像素
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
