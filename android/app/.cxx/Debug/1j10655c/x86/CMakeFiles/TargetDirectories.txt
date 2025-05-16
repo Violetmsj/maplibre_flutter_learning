@@ -1,2 +1,0 @@
-/Users/jt/codeWorkSpace/build_test/android/app/.cxx/Debug/1j10655c/x86/CMakeFiles/edit_cache.dir
-/Users/jt/codeWorkSpace/build_test/android/app/.cxx/Debug/1j10655c/x86/CMakeFiles/rebuild_cache.dir
