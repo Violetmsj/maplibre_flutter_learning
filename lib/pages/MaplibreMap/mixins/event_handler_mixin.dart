@@ -1,4 +1,4 @@
-import 'package:build_test/pages/MaplibreMap/mixins/map_state_mixin.dart';
+import 'package:maplibre_flutter_learning/pages/MaplibreMap/mixins/map_state_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';

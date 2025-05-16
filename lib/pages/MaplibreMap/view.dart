@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:build_test/common/widgets/center_crosser.dart';
+import 'package:maplibre_flutter_learning/common/widgets/center_crosser.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';

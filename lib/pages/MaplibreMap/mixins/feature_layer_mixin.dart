@@ -1,7 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:build_test/pages/MaplibreMap/mixins/map_state_mixin.dart';
+import 'package:maplibre_flutter_learning/pages/MaplibreMap/mixins/map_state_mixin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
