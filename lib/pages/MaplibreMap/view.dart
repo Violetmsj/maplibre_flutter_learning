@@ -25,10 +25,27 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
   Widget _buildMapView() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // controller.mapCenter = Point(
-        //   constraints.maxWidth / 2,
-        //   constraints.maxHeight / 2,
-        // );
+        final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+        print("devicePixelRatio$devicePixelRatio");
+        if (GetPlatform.isAndroid) {
+          //安卓端需要乘以devicePixelRatio
+          controller.mapCenter = Point(
+            constraints.maxWidth / 2 * devicePixelRatio,
+            constraints.maxHeight / 2 * devicePixelRatio,
+          );
+        } else if (GetPlatform.isIOS) {
+          //ios端不需要乘以devicePixelRatio
+          controller.mapCenter = Point(
+            constraints.maxWidth / 2,
+            constraints.maxHeight / 2,
+          );
+        }
+
+        print("容器约束大小${constraints.maxWidth}x${constraints.maxHeight}");
+        print("MediaQuery尺寸${Get.width}x${Get.height}");
+        print("屏幕点位${controller.mapCenter}");
+        print(GetPlatform.isAndroid ? "是安卓" : "不是安卓");
+        print(GetPlatform.isIOS ? "是IOS" : "不是IOS");
         return MapLibreMap(
           onMapCreated: controller.onMapCreated,
           initialCameraPosition: controller.initialCameraPosition,
@@ -50,10 +67,10 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // ElevatedButton(
-          //   onPressed: controller.toggleDrawingMode,
-          //   child: Text(controller.isDrawingMode ? "结束画地" : "开始画地"),
-          // ),
+          ElevatedButton(
+            onPressed: controller.toggleDrawingMode,
+            child: Text(controller.isDrawingMode ? "结束画地" : "开始画地"),
+          ),
           // ElevatedButton(
           //   onPressed: controller.addSourceTest,
           //   child: Text("添加源"),
@@ -62,20 +79,20 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
           //   onPressed: controller.sourceExistsTest,
           //   child: Text("检测源"),
           // ),
-          // if (controller.isDrawingMode) ...[
-          //   ElevatedButton(
-          //     onPressed: controller.onDrawPolygonPoint,
-          //     child: Text("打点"),
-          //   ),
-          //   ElevatedButton(
-          //     onPressed: controller.onFinishDrawPolygon,
-          //     child: Text("完成绘制"),
-          //   ),
-          //   ElevatedButton(
-          //     onPressed: controller.onUndoLastPoint,
-          //     child: Text("撤回"),
-          //   ),
-          // ],
+          if (controller.isDrawingMode) ...[
+            ElevatedButton(
+              onPressed: controller.onDrawPolygonPoint,
+              child: Text("打点"),
+            ),
+            ElevatedButton(
+              onPressed: controller.onFinishDrawPolygon,
+              child: Text("完成绘制"),
+            ),
+            ElevatedButton(
+              onPressed: controller.onUndoLastPoint,
+              child: Text("撤回"),
+            ),
+          ],
         ],
       ),
     );
@@ -117,7 +134,7 @@ class MaplibreMapPage extends GetView<MaplibreMapPageController> {
           ],
         ),
 
-        // if (controller.isDrawingMode) Center(child: CenterCrosser()),
+        if (controller.isDrawingMode) Center(child: CenterCrosser()),
         _buildDrawButtonsView(),
       ],
     );

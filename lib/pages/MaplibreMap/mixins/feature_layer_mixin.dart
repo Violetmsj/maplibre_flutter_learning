@@ -11,6 +11,8 @@ mixin FeatureLayerMixin on MapStateMixin {
   Future<void> addFeatureLayers(MapLibreMapController controller) async {
     await _addImageSource(controller);
     await _addImageLayer(controller);
+    //添加lineSource/PolygonSource会导致安卓闪退
+    // 添加source的时候一定要使用FeatureCollection来兼容安卓
     await _addLineSource(controller);
     await _addLineLayer(controller);
     await _addPolygonSource(controller);
@@ -51,17 +53,22 @@ mixin FeatureLayerMixin on MapStateMixin {
       "line-source",
       const GeojsonSourceProperties(
         data: {
-          "type": "Feature",
-          "properties": {},
-          "geometry": {
-            "type": "LineString",
-            "coordinates": [
-              [86.00426167774084, 44.34094461041972],
-              [86.00517720325354, 44.337967341789394],
-              [86.00693672884825, 44.33682141116668],
-              [86.01185767847899, 44.336698631557404],
-            ],
-          },
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {},
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [86.00426167774084, 44.34094461041972],
+                  [86.00517720325354, 44.337967341789394],
+                  [86.00693672884825, 44.33682141116668],
+                  [86.01185767847899, 44.336698631557404],
+                ],
+              },
+            }
+          ]
         },
       ),
     );
@@ -87,33 +94,38 @@ mixin FeatureLayerMixin on MapStateMixin {
       "polygon-source",
       const GeojsonSourceProperties(
         data: {
-          "type": "Feature",
-          "properties": {
-            "id": "DNwHaco86QmoggkJxKpsCa",
-            "name": "测试地块2",
-            "areaComp": 355.49,
-            "location": "塔城地区 新疆维吾尔自治区塔城地区沙湾市兵团一二一团",
-            "soliType": "荒漠风沙土",
-          },
-          "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-              [
-                [85.265665, 45.089596],
-                [85.264357, 45.08952],
-                [85.262812, 45.089982],
-                [85.261599, 45.089808],
-                [85.261589, 45.088868],
-                [85.259325, 45.088846],
-                [85.257211, 45.088944],
-                [85.257286, 45.092815],
-                [85.264367, 45.092663],
-                [85.265032, 45.091163],
-                [85.265269, 45.090876],
-                [85.265665, 45.089596],
-              ],
-            ],
-          },
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "id": "DNwHaco86QmoggkJxKpsCa",
+                "name": "测试地块2",
+                "areaComp": 355.49,
+                "location": "塔城地区 新疆维吾尔自治区塔城地区沙湾市兵团一二一团",
+                "soliType": "荒漠风沙土",
+              },
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                  [
+                    [85.265665, 45.089596],
+                    [85.264357, 45.08952],
+                    [85.262812, 45.089982],
+                    [85.261599, 45.089808],
+                    [85.261589, 45.088868],
+                    [85.259325, 45.088846],
+                    [85.257211, 45.088944],
+                    [85.257286, 45.092815],
+                    [85.264367, 45.092663],
+                    [85.265032, 45.091163],
+                    [85.265269, 45.090876],
+                    [85.265665, 45.089596],
+                  ],
+                ],
+              },
+            }
+          ],
         },
       ),
     );
