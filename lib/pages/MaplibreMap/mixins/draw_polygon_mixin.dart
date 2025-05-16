@@ -175,18 +175,79 @@ mixin DrawPolygonMixin on MapStateMixin {
         if (coordinates.length > 2) {
           coordinates.add(coordinates[0]);
           controller.setGeoJsonSource("draw-land-polygon-source", {
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [coordinates],
-            },
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [coordinates],
+                }
+              },
+              {
+                "type": "Feature",
+                "geometry": {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                    ...(drawPolygonPoints
+                        .map((e) => [e.longitude, e.latitude])
+                        .toList()),
+                  ],
+                },
+              },
+            ]
           });
         } else {
+          print("coordinates.length <= 2");
+          controller.setGeoJsonSource("draw-land-polygon-source", {
+            "type": "FeatureCollection",
+            "features": [
+              {
+                "type": "Feature",
+                "geometry": {
+                  "type": "MultiPoint",
+                  "coordinates": [
+                    ...(drawPolygonPoints
+                        .map((e) => [e.longitude, e.latitude])
+                        .toList()),
+                  ],
+                },
+              },
+            ]
+          });
           await controller.removeLayer("draw-land-polygon-layer");
+          await controller.removeLayer("draw-land-point-layer");
+          await controller.addLayer(
+            "draw-land-polygon-source",
+            "draw-land-point-layer",
+            CircleLayerProperties(
+              circleColor: "#FFA500", // 橘黄色
+              circleRadius: 6, // 点的大小
+              circleStrokeWidth: 2, // 边框宽度
+              circleStrokeColor: "#FFFFFF", // 白色边框
+            ),
+          );
         }
       }
       update(["maplibremap"]);
+    } else {
+      controller.setGeoJsonSource("draw-land-polygon-source", {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "MultiPoint",
+              "coordinates": [
+                ...(drawPolygonPoints
+                    .map((e) => [e.longitude, e.latitude])
+                    .toList()),
+              ],
+            },
+          },
+        ]
+      });
+      await controller.removeLayer("draw-land-point-layer");
     }
   }
 
