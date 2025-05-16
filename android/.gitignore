@@ -13,3 +13,6 @@ key.properties
 **/*.jks
 # NDK build files
 app/.cxx/
+.cxx/
+*/.cxx/
+**/.cxx/
