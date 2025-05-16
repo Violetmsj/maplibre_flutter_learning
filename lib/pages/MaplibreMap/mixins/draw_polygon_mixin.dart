@@ -165,90 +165,99 @@ mixin DrawPolygonMixin on MapStateMixin {
     print(mapCenterLatlng);
   }
 
-  void onUndoLastPoint() async {
+  List<List<double>> getCoordinatesFromPoints(List<LatLng> points) {
+    return points.map((e) => [e.longitude, e.latitude]).toList();
+  }
+
+  // 更新数据源的方法
+  Future<void> updatePolygonSource(List<List<double>> coordinates) async {
     final controller = await mapController.future;
-    if (drawPolygonPoints.isNotEmpty) {
-      drawPolygonPoints.removeLast();
-      var coordinates =
-          drawPolygonPoints.map((e) => [e.longitude, e.latitude]).toList();
-      if (coordinates.isNotEmpty) {
-        if (coordinates.length > 2) {
-          coordinates.add(coordinates[0]);
-          controller.setGeoJsonSource("draw-land-polygon-source", {
-            "type": "FeatureCollection",
-            "features": [
-              {
-                "type": "Feature",
-                "geometry": {
-                  "type": "Polygon",
-                  "coordinates": [coordinates],
-                }
-              },
-              {
-                "type": "Feature",
-                "geometry": {
-                  "type": "MultiPoint",
-                  "coordinates": [
-                    ...(drawPolygonPoints
-                        .map((e) => [e.longitude, e.latitude])
-                        .toList()),
-                  ],
-                },
-              },
-            ]
-          });
-        } else {
-          print("coordinates.length <= 2");
-          controller.setGeoJsonSource("draw-land-polygon-source", {
-            "type": "FeatureCollection",
-            "features": [
-              {
-                "type": "Feature",
-                "geometry": {
-                  "type": "MultiPoint",
-                  "coordinates": [
-                    ...(drawPolygonPoints
-                        .map((e) => [e.longitude, e.latitude])
-                        .toList()),
-                  ],
-                },
-              },
-            ]
-          });
-          await controller.removeLayer("draw-land-polygon-layer");
-          await controller.removeLayer("draw-land-point-layer");
-          await controller.addLayer(
-            "draw-land-polygon-source",
-            "draw-land-point-layer",
-            CircleLayerProperties(
-              circleColor: "#FFA500", // 橘黄色
-              circleRadius: 6, // 点的大小
-              circleStrokeWidth: 2, // 边框宽度
-              circleStrokeColor: "#FFFFFF", // 白色边框
-            ),
-          );
+    final features = <Map<String, dynamic>>[];
+
+    // 添加点图层数据
+    features.add({
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": coordinates,
+      },
+    });
+
+    // 如果点数足够，添加多边形数据
+    if (coordinates.length > 2) {
+      var polygonCoordinates = [...coordinates, coordinates[0]];
+      features.add({
+        "type": "Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [polygonCoordinates],
         }
-      }
-      update(["maplibremap"]);
-    } else {
-      controller.setGeoJsonSource("draw-land-polygon-source", {
-        "type": "FeatureCollection",
-        "features": [
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "MultiPoint",
-              "coordinates": [
-                ...(drawPolygonPoints
-                    .map((e) => [e.longitude, e.latitude])
-                    .toList()),
-              ],
-            },
-          },
-        ]
       });
+    }
+
+    // 更新数据源
+    await controller.setGeoJsonSource("draw-land-polygon-source", {
+      "type": "FeatureCollection",
+      "features": features,
+    });
+  }
+
+  // 更新图层的方法
+  Future<void> updateLayers(bool showPolygon) async {
+    final controller = await mapController.future;
+
+    // 移除现有图层
+    if (await isLayerExists("draw-land-polygon-layer")) {
+      await controller.removeLayer("draw-land-polygon-layer");
+    }
+    if (await isLayerExists("draw-land-point-layer")) {
       await controller.removeLayer("draw-land-point-layer");
     }
+
+    // 添加点图层
+    await controller.addLayer(
+      "draw-land-polygon-source",
+      "draw-land-point-layer",
+      CircleLayerProperties(
+        circleColor: "#FFA500",
+        circleRadius: 6,
+        circleStrokeWidth: 2,
+        circleStrokeColor: "#FFFFFF",
+      ),
+    );
+
+    // 如果需要显示多边形，添加多边形图层
+    if (showPolygon) {
+      await controller.addLayer(
+        "draw-land-polygon-source",
+        "draw-land-polygon-layer",
+        FillLayerProperties(
+          fillColor: "#808080",
+          fillOutlineColor: "#ffffff",
+          fillOpacity: 0.5,
+        ),
+      );
+    }
+  }
+
+  // 撤销上一个点的方法
+  void onUndoLastPoint() async {
+    if (drawPolygonPoints.isEmpty) {
+      return;
+    }
+
+    // 移除最后一个点
+    drawPolygonPoints.removeLast();
+    final coordinates = getCoordinatesFromPoints(drawPolygonPoints);
+
+    // 更新数据源
+    await updatePolygonSource(coordinates);
+
+    // 更新图层
+    await updateLayers(coordinates.length > 2);
+
+    // 更新UI
+    update(["maplibremap"]);
   }
 
   void onFinishDrawPolygon() {}
