@@ -9,15 +9,17 @@ class MaplibreMapPageController extends GetxController
     with
         MapStateMixin,
         BaseLayerMixin,
-        // FeatureLayerMixin,
-        EventHandlerMixin
-// DrawPolygonMixin
-{
+        FeatureLayerMixin,
+        EventHandlerMixin,
+        DrawPolygonMixin {
   void onStyleLoaded() async {
     final controller = await mapController.future;
 
     await addBaseLayers(controller);
-    // await addFeatureLayers(controller);
+    try {
+      await addFeatureLayers(controller);
+    } catch (e) {}
+
     setupEventHandlers(controller);
 
     mapInitialized = true;
