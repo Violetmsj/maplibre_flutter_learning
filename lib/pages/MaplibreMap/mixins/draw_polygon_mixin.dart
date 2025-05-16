@@ -49,42 +49,7 @@ mixin DrawPolygonMixin on MapStateMixin {
       print("更新数据源");
     } else {
       // 添加画地数据源
-      try {
-        final features = <Map<String, dynamic>>[];
-
-        // 添加点图层数据
-        features.add({
-          "type": "Feature",
-          "geometry": {
-            "type": "MultiPoint",
-            "coordinates": coordinates,
-          },
-        });
-
-        // 如果有至少2个点，添加线段数据
-        if (coordinates.length >= 2) {
-          features.add({
-            "type": "Feature",
-            "geometry": {
-              "type": "LineString",
-              "coordinates": coordinates,
-            }
-          });
-        }
-
-        await controller.addSource(
-          "draw-land-polygon-source",
-          GeojsonSourceProperties(
-            data: {
-              "type": "FeatureCollection",
-              "features": features,
-            },
-          ),
-        );
-        print("添加画地数据源");
-      } catch (e) {
-        print(e);
-      }
+      await addPolygonSource(coordinates);
     }
 
     // 更新图层
@@ -95,6 +60,47 @@ mixin DrawPolygonMixin on MapStateMixin {
 
   List<List<double>> getCoordinatesFromPoints(List<LatLng> points) {
     return points.map((e) => [e.longitude, e.latitude]).toList();
+  }
+
+  // 添加多边形数据源
+  Future<void> addPolygonSource(List<List<double>> coordinates) async {
+    final controller = await mapController.future;
+    final features = <Map<String, dynamic>>[];
+
+    // 添加点图层数据
+    features.add({
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": coordinates,
+      },
+    });
+
+    // 如果有至少2个点，添加线段数据
+    if (coordinates.length >= 2) {
+      features.add({
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": coordinates,
+        }
+      });
+    }
+
+    try {
+      await controller.addSource(
+        "draw-land-polygon-source",
+        GeojsonSourceProperties(
+          data: {
+            "type": "FeatureCollection",
+            "features": features,
+          },
+        ),
+      );
+      print("添加画地数据源");
+    } catch (e) {
+      print(e);
+    }
   }
 
   // 更新数据源的方法
